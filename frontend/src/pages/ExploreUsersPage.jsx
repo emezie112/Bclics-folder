@@ -1,25 +1,25 @@
 import React from "react";
-import { Box, Flex, Skeleton, SkeletonCircle, Text } from "@chakra-ui/react";
+import { Box, Flex, Skeleton, SkeletonCircle, Text, Heading, } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
-import SuggestedUser from "./SuggestedUser";
+import SuggestedUser from "../components/SuggestedUser";
 import useShowToast from "../hooks/useShowToast";
 
-const SuggestedUsers = () => {
+const ExploreUsersPage = () => {
   const [loading, setLoading] = useState(true);
-  const [suggestedUsers, setSuggestedUsers] = useState([]);
+  const [exploreUsers, setExploreUsers] = useState([]);
   const showToast = useShowToast();
 
   useEffect(() => {
-    const getSuggestedUsers = async () => {
+    const getExploreUsers = async () => {
       setLoading(true);
       try {
-        const res = await fetch("/api/users/suggested");
+        const res = await fetch("/api/users/explore"); // Fetching all suggested users from the backend
         const data = await res.json();
         if (data.error) {
           showToast("Error", data.error, "error");
           return;
         }
-        setSuggestedUsers(data);
+        setExploreUsers(data); // Set all users received from the API
       } catch (error) {
         showToast("Error", error.message, "error");
       } finally {
@@ -27,21 +27,24 @@ const SuggestedUsers = () => {
       }
     };
 
-    getSuggestedUsers();
+    getExploreUsers();
   }, [showToast]);
 
   return (
     <>
-      <Text mb={4} fontWeight={"bold"}>
-        Suggested Users
-      </Text>
+      <Heading as="h4" size="lg" mb={6} textAlign="center">
+          Suggested Users
+        </Heading>
       <Flex direction={"column"} gap={4}>
         {!loading &&
-          suggestedUsers.map((user) => (
-            <SuggestedUser key={user._id} user={user} />
+          exploreUsers.map((user) => (
+            <SuggestedUser key={user._id} user={user} /> // Mapping all users returned from the API
           ))}
-        {loading &&
-          [0, 1, 2, 3, 4].map((_, idx) => (
+          
+        {loading && 
+          Array(10) // Show 5 skeletons while loading (you can dynamically change this number as needed)
+          .fill("")
+          .map((_, idx) => (
             <Flex
               key={idx}
               gap={2}
@@ -69,4 +72,4 @@ const SuggestedUsers = () => {
   );
 };
 
-export default SuggestedUsers;
+export default ExploreUsersPage;

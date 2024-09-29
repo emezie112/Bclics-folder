@@ -8,14 +8,15 @@ import { useToast } from "@chakra-ui/toast";
 import userAtom from "../atoms/userAtom";
 import { useRecoilValue } from "recoil";
 import { Link as RouterLink } from "react-router-dom";
-import { Button } from "@chakra-ui/react";
+import { Button, IconButton } from "@chakra-ui/react";
+import { HamburgerIcon } from "@chakra-ui/icons";
 import useFollowUnfollow from "../hooks/useFollowUnfollow";
 
 const UserHeader = ({ user }) => {
   const toast = useToast();
   const currentUser = useRecoilValue(userAtom); // logged in user
- 
-  const {handleFollowUnfollow, following, updating} = useFollowUnfollow(user);
+
+  const { handleFollowUnfollow, following, updating } = useFollowUnfollow(user);
 
   const copyURL = () => {
     const currentURL = window.location.href;
@@ -29,10 +30,8 @@ const UserHeader = ({ user }) => {
     });
   };
 
- 
-
   return (
-    <VStack gap={4} alignItems={"start"}>
+    <VStack gap={4} alignItems={"start"} mt={"1rem"}>
       <Flex justifyContent={"space-between"} w={"full"}>
         <Box>
           <Text
@@ -43,29 +42,18 @@ const UserHeader = ({ user }) => {
               md: "xl",
             }}
           >
-            {user.name}
+            {user.username}
           </Text>
+
           <Flex gap={2} alignItems={"center"}>
             <Text
-              fontSize={"sm"}
+              fontWeight={"bold"}
               size={{
                 base: "md",
                 md: "xl",
               }}
             >
-              {user.username}
-            </Text>
-            <Text
-              fontSize={{
-                base: "xm",
-                md: "sm",
-              }}
-              bg={"gray.dark"}
-              color={"gray.light"}
-              p={0.8}
-              borderRadius={"full"}
-            >
-              threads.net
+              {user.name}
             </Text>
           </Flex>
         </Box>
@@ -94,22 +82,41 @@ const UserHeader = ({ user }) => {
               }}
             />
           )}
-        </Box>
+        </Box>{" "}
       </Flex>
 
       <Text
         fontSize={{
-          base: "md",
-          md: "xl",
+          base: "xm",
+          md: "md",
         }}
       >
         {" "}
         {user.bio}{" "}
       </Text>
       {currentUser?._id === user._id && (
-        <Link as={RouterLink} to="/update">
-          <Button size={"sm"}>Update Profile </Button>
-        </Link>
+        <>
+          <Box
+            display="flex"
+            flexDirection="row"
+            justifyContent="space-between"
+            alignItems="center"
+            gap={4}
+            
+          >
+            <Link as={RouterLink} to="/update">
+              <Button size="sm">Update Profile</Button>
+            </Link>
+
+            <Link as={RouterLink} to="/exploreUsersPage">
+              <Button size="sm">Explore Users Page</Button>
+            </Link>
+
+            <Box as="button" fontWeight="bold" cursor="pointer">
+              <HamburgerIcon w={6} h={6} />
+            </Box>
+          </Box>
+        </>
       )}
       {currentUser?._id !== user._id && (
         <Button size={"sm"} onClick={handleFollowUnfollow} isLoading={updating}>
@@ -117,16 +124,11 @@ const UserHeader = ({ user }) => {
           {following ? "Unfollow" : "Follow"}{" "}
         </Button>
       )}
-      <Flex w={"full"} justifyContent={"spacep-between"}>
+      <Flex w={"full"} justifyContent={"space-between"}>
         <Flex gap={2} alignItems={"center"}>
-          <Text color={"gray.light"}>{user.followers.length} followers</Text>
-          <Box w="1" h="1" bg={"gray.light"} borderRadius={"full"}></Box>
-          <Link color={"gray.light"}>instagram.com</Link>
+          <Text fontWeight={"bold"}> {" "} {user.followers.length} Customers </Text>
         </Flex>
-        <Flex>
-          <Box className="icon-container">
-            <BsInstagram size={24} cursor={"pointer"} />
-          </Box>
+        <Flex justifyContent={"flex-end"}>
           <Box className="icon-container">
             <Menu>
               <MenuButton>
@@ -151,19 +153,7 @@ const UserHeader = ({ user }) => {
           justifyContent={"center"}
           pb="3"
           cursor={"pointer"}
-        >
-          <Text>Threads</Text>
-        </Flex>
-        <Flex
-          flex={1}
-          borderBottom={"1.5px solid gray"}
-          justifyContent={"center"}
-          color={"gray.light"}
-          pb="3"
-          cursor={"pointer"}
-        >
-          <Text> Replies </Text>
-        </Flex>
+        ></Flex>
       </Flex>
     </VStack>
   );

@@ -8,6 +8,7 @@ import {
   getUserProfile,
   getSuggestedUsers,
   freezeAccount,
+  getExploreUsersPage,
 } from "../controllers/userController.js";
 import protectRoute from "../middlewares/protectRoute.js";
 
@@ -15,6 +16,7 @@ const router = express.Router();
 
 router.get("/profile/:query", getUserProfile);
 router.get("/suggested", protectRoute, getSuggestedUsers);
+router.get("/explore", protectRoute, getExploreUsersPage);
 router.post("/signup", signupUser);
 router.post("/login", loginUser);
 router.post("/logout", logoutUser);

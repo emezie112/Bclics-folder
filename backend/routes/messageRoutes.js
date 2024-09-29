@@ -13,4 +13,3 @@ router.get("/:otherUserId", protectRoute, getMessages);
 router.post("/", protectRoute, sendMessage);
 
 export default router;
- 

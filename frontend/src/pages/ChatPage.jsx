@@ -7,10 +7,11 @@ import {
   SkeletonCircle,
   Text,
   useColorModeValue,
+  useBreakpointValue,
 } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
-import Conversation from "../components/Conversation";
 import { GiConversation } from "react-icons/gi";
+import Conversation from "../components/Conversation";
 import MessageContainer from "../components/MessageContainer";
 import useShowToast from "../hooks/useShowToast";
 import { useRecoilState, useRecoilValue } from "recoil";
@@ -33,15 +34,18 @@ const ChatPage = () => {
   const showToast = useShowToast();
   const { socket, onlineUsers } = useSocket();
 
+  // Determine if it's a small screen
+  const isSmallScreen = useBreakpointValue({ base: true, md: false });
+
   useEffect(() => {
     socket?.on("messagesSeen", ({ conversationId }) => {
       setConversations((prev) => {
         const updatedConversations = prev.map((conversation) => {
-          if (converstion._id === conversationId) {
+          if (conversation._id === conversationId) {
             return {
               ...conversation,
               lastMessage: {
-                ...conversation.lastMessasge,
+                ...conversation.lastMessage,
                 seen: true,
               },
             };
@@ -63,7 +67,6 @@ const ChatPage = () => {
           showToast("Error", data.error, "error");
           return;
         }
-        console.log(data);
         setConversations(data);
       } catch (error) {
         showToast("Error", error.message, "error");
@@ -86,14 +89,12 @@ const ChatPage = () => {
         return;
       }
 
-      // If user is tying to message themseleves
       const messagingYourself = searchedUser._id === currentUser._id;
       if (messagingYourself) {
         showToast("Error", "You cannot message yourself", "error");
         return;
       }
 
-      // if user is already in a conversation with the searched user
       const conversationAlreadyExists = conversations.find(
         (conversation) => conversation.participants[0]._id === searchedUser._id
       );
@@ -124,10 +125,14 @@ const ChatPage = () => {
       setConversations((prevConvs) => [...prevConvs, mockConversation]);
     } catch (error) {
       showToast("Error", error.message, "error");
-      return;
     } finally {
       setSearchingUser(false);
     }
+  };
+
+  // Handle "Back" button click for small screens
+  const handleBack = () => {
+    setSelectedConversation({}); // Reset the selected conversation to go back to the conversation list
   };
 
   return (
@@ -154,85 +159,117 @@ const ChatPage = () => {
         }}
         mx={"auto"}
       >
-        <Flex
-          flex={30}
-          gap={2}
-          flexDirection={"column"}
-          maxW={{
-            sm: "250px",
-            md: "full",
-          }}
-          mx={"auto"}
-        >
-          <Text
-            fontWeight={"center"}
-            color={useColorModeValue("gray.600", "gray.400")}
+        {/* Conversations List - Hide on small screens when a conversation is selected */}
+        {!selectedConversation._id || !isSmallScreen ? (
+          <Flex
+            flex={30}
+            gap={2}
+            flexDirection={"column"}
+            maxW={{
+              sm: "250px",
+              md: "full",
+            }}
+            mx={"auto"}
+            p={isSmallScreen ? 4 : 2} // Adjust padding for small screens
+            height={isSmallScreen ? "100vh" : "auto"} // Full height for small screens
+            width={isSmallScreen ? "100%" : "auto"} // Full width for small screens
           >
-            Your Conversations
-          </Text>
-          <form onSubmit={handleConversationSearch}>
-            <Flex alignItems={"center"} gap={2}>
-              <Input
-                placeholder="Search for a user"
-                onChange={(e) => setSearchText(e.target.value)}
-              />
-              <Button
-                size={"sm"}
-                onClick={handleConversationSearch}
-                isLoading={searchingUser}
-              >
-                <SearchIcon />
-              </Button>
-            </Flex>
-          </form>
-
-          {loadingConversations &&
-            [0, 1, 2, 3, 4].map((_, i) => (
-              <Flex
-                key={i}
-                gap={4}
-                alignItems={"center"}
-                p={"1"}
-                borderRadius={"md"}
-              >
-                <Box>
-                  <SkeletonCircle size={"10"} />
-                </Box>
-
-                <Flex w={"full"} flexDirection={"column"} gap={3}>
-                  <SkeletonCircle h={"10px"} w={"80px"} />
-                  <SkeletonCircle h={"8px"} w={"90%"} />
-                </Flex>
+            <Text
+              fontWeight={"center"}
+              color={useColorModeValue("gray.600", "gray.400")}
+            >
+              Your Conversations
+            </Text>
+            <form onSubmit={handleConversationSearch}>
+              <Flex alignItems={"center"} gap={2}>
+                <Input
+                  placeholder="Search for a user"
+                  onChange={(e) => setSearchText(e.target.value)}
+                />
+                <Button
+                  size={"sm"}
+                  onClick={handleConversationSearch}
+                  isLoading={searchingUser}
+                >
+                  <SearchIcon />
+                </Button>
               </Flex>
-            ))}
-          {!loadingConversations &&
-            conversations.map((conversation) => (
-              <Conversation
-                key={conversation._id}
-                isOnline={onlineUsers.includes(
-                  conversation.participants[0]._id
-                )}
-                conversation={conversation}
-              />
-            ))}
-        </Flex>
+            </form>
 
-        {!selectedConversation._id && (
+            {/* Loading Conversations */}
+            {loadingConversations &&
+              [0, 1, 2, 3, 4].map((_, i) => (
+                <Flex
+                  key={i}
+                  gap={4}
+                  alignItems={"center"}
+                  p={"1"}
+                  borderRadius={"md"}
+                >
+                  <Box>
+                    <SkeletonCircle size={"10"} />
+                  </Box>
+
+                  <Flex w={"full"} flexDirection={"column"} gap={3}>
+                    <SkeletonCircle h={"10px"} w={"80px"} />
+                    <SkeletonCircle h={"8px"} w={"90%"} />
+                  </Flex>
+                </Flex>
+              ))}
+
+            {/* Display Conversations */}
+            {!loadingConversations &&
+              conversations.map((conversation) => (
+                <Conversation
+                  key={conversation._id}
+                  isOnline={onlineUsers.includes(
+                    conversation.participants[0]._id
+                  )}
+                  conversation={conversation}
+                />
+              ))}
+          </Flex>
+        ) : null}
+
+        {/* Display prompt when no conversation is selected and screen is not small */}
+        {!selectedConversation._id && !isSmallScreen && (
           <Flex
             flex={70}
             borderRadius={"md"}
+            borderColor="red.500"
             p={2}
             flexDirection={"column"}
             alignItems={"center"}
             justifyContent={"center"}
             height={"400px"}
           >
-            <GiConversation size={100} />
-            <Text> Select a conversation to start messaging</Text>
+            <GiConversation size={100} borderColor="red.500" />
+            <Text>Select a conversation to start messaging</Text>
           </Flex>
         )}
 
-        {selectedConversation._id && <MessageContainer />}
+        {/* Message container - Full screen on small devices */}
+        {selectedConversation._id && (
+          <Flex
+            flex={isSmallScreen ? 100 : 70}
+            borderRadius={"md"}
+            p={0}
+            position={"fixed"}
+            overflowY={"auto"}
+            flexDirection={"column"}
+            alignItems={"center"}
+            justifyContent={"center"}
+            width={isSmallScreen ? "100%" : "auto"}
+            height={isSmallScreen ? "95vh" : "auto"}
+          >
+            {isSmallScreen && (
+              <Button onClick={handleBack} alignSelf={"flex-start"} mt={4}>
+                Back
+              </Button>
+            )}
+            <MessageContainer />
+          </Flex>
+        )}
       </Flex>
     </Box>
   );

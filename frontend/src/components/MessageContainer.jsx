@@ -36,12 +36,12 @@ const MessageContainer = () => {
         setMessages((prevMessages) => [...prevMessages, message]);
       }
 
-      if (!document.hassFocus()) {
+      if (!document.hasFocus()) {
         const sound = new Audio(messageSound);
         sound.play();
       }
 
-      // To opdate everything to the last messasges
+      // To update conversations with the last message
       setConversations((prev) => {
         const updatedConversations = prev.map((conversation) => {
           if (conversation._id === message.conversationId) {
@@ -73,7 +73,7 @@ const MessageContainer = () => {
     }
 
     socket.on("messagesSeen", ({ conversationId }) => {
-      if (selectedConversation._id === coversationId) {
+      if (selectedConversation._id === conversationId) {
         setMessages((prev) => {
           const updatedMessages = prev.map((message) => {
             if (!message.seen) {
@@ -118,11 +118,15 @@ const MessageContainer = () => {
 
   return (
     <Flex
-      flex={"70"}
-      bg={useColorModeValue("gray.200", "gray,dark")}
+      flex={1}
+      // bg={useColorModeValue("gray.200", "gray.dark")}
+      bg={"#101010"}
       borderRadius={"md"}
-      p={2}
+      p={4}
       flexDirection={"column"}
+      height={{ base: "100vh", md: "auto" }} // Full height on small screens
+      width={{ base: "100%", md: "auto" }} // Full width on small screens
+      overflowY={"hidden"} // Handle overflow for better experience
     >
       {/* Message Header */}
       <Flex w={"full"} h={12} alignItems={"center"} gap={2}>
@@ -140,8 +144,8 @@ const MessageContainer = () => {
         gap={4}
         my={4}
         p={2}
-        height={"400px"}
-        overflowY={"auto"}
+        flex={1}
+        overflowY={"auto"} // Allow scrolling for messages
       >
         {loadingMessages &&
           [...Array(5)].map((_, i) => (
@@ -182,7 +186,11 @@ const MessageContainer = () => {
           ))}
       </Flex>
 
-      <MessageInput setMessages={setMessages} />
+      <MessageInput
+        setMessages={setMessages}
+        position={"fixed"}
+        zIndex="1000"
+      />
     </Flex>
   );
 };

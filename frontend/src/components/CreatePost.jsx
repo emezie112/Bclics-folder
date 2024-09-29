@@ -1,6 +1,8 @@
 import { AddIcon } from "@chakra-ui/icons";
 import {
+  Box,
   Button,
+  Checkbox,
   CloseButton,
   Flex,
   FormControl,
@@ -13,6 +15,7 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  Select,
   Text,
   Textarea,
   useColorModeValue,
@@ -32,21 +35,27 @@ const MAX_CHAR = 1000;
 const CreatePost = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [postText, setPostText] = useState("");
+  const [postTitle, setPostTitle] = useState("");
   const { handleImageChange, imgUrl, setImgUrl } = usePreviewImg();
   const imageRef = useRef(null);
+  const [category, setCategory] = useState("");
+  const [price, setPrice] = useState("");
+  const [location, setLocation] = useState("");
+  const [condition, setCondition] = useState("");
+  const [pricePoint, setPricePoint] = useState("");
   const [remainingChar, setRemainingChar] = useState(MAX_CHAR);
   const user = useRecoilValue(userAtom);
   const showToast = useShowToast();
   const [loading, setLoading] = useState(false);
   const [posts, setPosts] = useRecoilState(postsAtom);
-  const {username} = useParams();
+  const { username } = useParams();
 
   const handleTextChange = (e) => {
     const inputText = e.target.value;
 
     if (inputText.length > MAX_CHAR) {
-      const turcatedText = inputText.slice(0, MAX_CHAR);
-      setPostText(turcatedText);
+      const truncatedText = inputText.slice(0, MAX_CHAR);
+      setPostText(truncatedText);
       setRemainingChar(0);
     } else {
       setPostText(inputText);
@@ -65,7 +74,13 @@ const CreatePost = () => {
         body: JSON.stringify({
           postedBy: user._id,
           text: postText,
+          title: postTitle,
           img: imgUrl,
+          category,
+          price,
+          location,
+          condition,
+          pricePoint,
         }),
       });
 
@@ -81,74 +96,169 @@ const CreatePost = () => {
 
       onClose();
       setPostText("");
+      setPostTitle("");
       setImgUrl("");
+      setCategory("");
+      setPrice("");
+      setLocation("");
+      setCondition("");
+      setPricePoint("");
     } catch (error) {
       showToast("Error", error, "error");
     } finally {
       setLoading(false);
     }
   };
+
   return (
     <>
       <Button
-        position={"fixed"}
-        bottom={10}
-        right={5}
+        onClick={onOpen}
         size={{ base: "sm", sm: "md" }}
         bg={useColorModeValue("gray.300", "gray.dark")}
-        onClick={onOpen}
       >
         <AddIcon />
       </Button>
+
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
-        <ModalContent>
+        <ModalContent p={"0.5rem"} m={"0.5rem"} gap={2}>
           <ModalHeader>Create Post</ModalHeader>
           <ModalCloseButton />
           <ModalBody pb={6}>
+            {/* Post Description */}
             <FormControl>
+              Discription
               <Textarea
                 placeholder="Post content goes here..."
                 onChange={handleTextChange}
                 value={postText}
-                type="text"
               />
               <Text
-                fontSize={"xs"}
-                fontWeight={"bold"}
-                textAlign={"right"}
+                fontSize="xs"
+                fontWeight="bold"
+                textAlign="right"
                 m={1}
-                color={"gray.800"}
+                color="gray.800"
               >
                 {remainingChar}/{MAX_CHAR}
               </Text>
+              {/* Image Upload */}
               <Input
                 type="file"
                 hidden
                 ref={imageRef}
                 onChange={handleImageChange}
               />
-              <BsFillImageFill
-                style={{ marginLeft: "5px", cursor: "pointer" }}
-                size={16}
-                onClick={() => imageRef.current.click()}
-              />
-            </FormControl>
-
-            {imgUrl && (
-              <Flex mt={5} w={"full"} position={"relative"}>
-                <Image src={imgUrl} alt="Selected img" />
-                <CloseButton
-                  onClick={() => {
-                    setImgUrl("");
-                  }}
-                  bg={"gray.800"}
-                  position={"absolute"}
-                  top={2}
-                  right={2}
+              <Box display={"flex"} mt={"0.5rem"} mb={"0.5rem"}>
+                <Text>Image</Text>
+                <BsFillImageFill
+                  style={{ marginLeft: "5px", cursor: "pointer" }}
+                  size={16}
+                  onClick={() => imageRef.current.click()}
                 />
+              </Box>
+              {/* Post Header */}
+              <Text mt={"0.5rem"} mb={"-0.5rem"}>
+                Post Header
+              </Text>
+              <Input
+                placeholder="Write the title of your post"
+                value={postTitle}
+                onChange={(e) => setPostTitle(e.target.value)}
+                mt={4}
+              />
+              <Text fontSize="xs" mt={2}>
+                Note: The title will help in the search across other users.
+              </Text>
+              {/* Image Preview */}
+              {imgUrl && (
+                <Flex mt={5} w="full" position="relative">
+                  <Image src={imgUrl} alt="Selected img" />
+                  <CloseButton
+                    onClick={() => setImgUrl("")}
+                    bg="gray.800"
+                    position="absolute"
+                    top={2}
+                    right={2}
+                  />
+                </Flex>
+              )}
+              {/* Categories */}
+              <Text mt={"0.5rem"} mb={"-0.5rem"}>
+                Category
+              </Text>
+              <Select
+                placeholder="Select category"
+                mt={4}
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+              >
+                <option value="Tech">Tech</option>
+                <option value="Fashion">Fashion</option>
+                <option value="Sports">Sports</option>
+                <option value="Home">Home</option>
+              </Select>
+              {/* Price */}
+              <Text mt={"0.5rem"} mb={"-0.5rem"}>
+                Price
+              </Text>
+              <Input
+                placeholder="Input the Price"
+                type="number"
+                mt={4}
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
+              />
+              {/* Location */}
+              <Text mt={"0.5rem"} mb={"-0.5rem"} 
+                >Location
+              </Text>
+              <Input
+                placeholder="Write where this is available in"
+                mt={4}
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+              />
+              {/* Condition */}
+              <Text mt={4}>Condition</Text>
+              <Flex gap={4} flexDirection={"flex-wrap"}>
+                <Checkbox
+                  isChecked={condition === "Brand New"}
+                  onChange={() => setCondition("Brand New")}
+                >
+                  Brand New
+                </Checkbox>
+                <Checkbox
+                  isChecked={condition === "Foreign Used"}
+                  onChange={() => setCondition("Foreign Used")}
+                >
+                  Foreign Used
+                </Checkbox>
+                <Checkbox
+                  isChecked={condition === "Nigerian Used"}
+                  onChange={() => setCondition("Nigerian Used")}
+                >
+                  Nigerian Used
+                </Checkbox>
               </Flex>
-            )}
+              {/* Price Point */}
+              <Text mt={4}>Price Point</Text>
+              <Flex gap={4} flexDirection={"flex-wrap"}>
+                <Checkbox
+                  isChecked={pricePoint === "Negotiable"}
+                  onChange={() => setPricePoint("Negotiable")}
+                >
+                  Negotiable Price
+                </Checkbox>
+                <Checkbox
+                  isChecked={pricePoint === "Fixed"}
+                  onChange={() => setPricePoint("Fixed")}
+                >
+                  Fixed Price
+                </Checkbox>
+              </Flex>
+            </FormControl>
           </ModalBody>
 
           <ModalFooter>

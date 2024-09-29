@@ -11,7 +11,7 @@ const SuggestedUser = ({ user }) => {
       <Flex gap={2} as={Link} to={`${user.username}`}>
         <Avatar src={user.profilePic} />
 
-        <Box>
+        <Box> 
           <Text fontSize={"sm"} fontWeight={"bold"}>
             {user.username}
           </Text>

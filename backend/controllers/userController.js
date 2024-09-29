@@ -243,7 +243,7 @@ const getSuggestedUsers = async (req, res) => {
     const filteredUsers = users.filter(
       (user) => !usersFollowedByYou.following.includes(user._id)
     );
-    const suggestedUsers = filteredUsers.slice(0, 4);
+    const suggestedUsers = filteredUsers.slice(0, 5);
 
     suggestedUsers.forEach((user) => (user.password = null));
 
@@ -252,6 +252,40 @@ const getSuggestedUsers = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+
+
+
+ const getExploreUsersPage = async (req, res) => {
+  try {
+    // exclude the current user from suggested users array and exclude users that current user is already following
+    const userId = req.user._id;
+
+    const usersFollowedByYou = await User.findById(userId).select("following");
+
+    const users = await User.aggregate([
+      {
+        $match: {
+          _id: { $ne: userId },
+        }, 
+      },
+      {
+        $sample: { size: 250 },
+      },
+    ]);
+    const filteredUsers = users.filter(
+      (user) => !usersFollowedByYou.following.includes(user._id)
+    );
+    const exploreUsers = filteredUsers.slice(0, 200);
+
+    exploreUsers.forEach((user) => (user.password = null));
+
+    res.status(200).json(exploreUsers);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 
 // This is for FreezeAccounts
 
@@ -279,5 +313,6 @@ export {
   updateUser,
   getUserProfile,
   getSuggestedUsers,
+  getExploreUsersPage,
   freezeAccount,
 };
