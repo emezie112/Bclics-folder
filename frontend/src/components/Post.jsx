@@ -1,5 +1,5 @@
 import { Avatar } from "@chakra-ui/avatar";
-import { Box, Flex, Text, Button } from "@chakra-ui/react";
+import { Box, Flex, Text, Button, Heading } from "@chakra-ui/react";
 import { Image } from "@chakra-ui/image";
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -16,8 +16,8 @@ import "slick-carousel/slick/slick-theme.css";
 
 const Post = ({ post, postedBy }) => {
   const [user, setUser] = useState(null);
-  const [showMore, setShowMore] = useState(false); // For "show more" functionality
-  const [showNumber, setShowNumber] = useState(false); // For toggling phone number visibility
+  const [showMore, setShowMore] = useState(false);
+  const [showNumber, setShowNumber] = useState(false);
   const showToast = useShowToast();
   const currentUser = useRecoilValue(userAtom);
   const [posts, setPosts] = useRecoilState(postsAtom);
@@ -66,15 +66,59 @@ const Post = ({ post, postedBy }) => {
 
   const handleShowMoreToggle = () => setShowMore(!showMore);
 
-  // Slick carousel settings
   const settings = {
     dots: true,
     infinite: true,
     speed: 500,
     slidesToShow: 1,
     slidesToScroll: 1,
-    arrows: true,
+    autoplay: true,
+    autoplaySpeed: 5000,
+    responsive: [
+      {
+        breakpoint: 1024,
+        settings: {
+          slidesToShow: 1,
+          slidesToScroll: 1,
+        },
+      },
+      {
+        breakpoint: 768,
+        settings: {
+          slidesToShow: 1,
+          slidesToScroll: 1,
+        },
+      },
+    ],
   };
+
+  const slides = posts.map((post, index) => (
+    <Box key={index}>
+      {post.img && post.img.length > 0 && (
+        <Box
+          borderRadius={6}
+          overflow="hidden"
+          border="1px solid"
+          borderColor="gray.300"
+        >
+          {post.img.length === 1 ? (
+            // Single image, no slider
+            <Image src={post.img[0]} w="full" borderRadius="md" />
+          ) : (
+            // Multiple images, use slider
+            <Slider {...settings}>
+              {post.img.map((imgUrls, imgIndex) => (
+                <Box key={imgIndex} position="relative">
+                  <Image src={imgUrls} w="full" borderRadius="md" />
+                  {/* CloseButton or other actions can be added here */}
+                </Box>
+              ))}
+            </Slider>
+          )}
+        </Box>
+      )}
+    </Box>
+  ));
 
   return (
     <Link to={`/${user.username}/post/${post._id}`}>
@@ -139,37 +183,27 @@ const Post = ({ post, postedBy }) => {
         </Flex>
 
         <Flex flex={1} flexDirection={"column"} gap={2}>
-          {/* Image Carousel using react-slick */}
-          {post.img && (
+          {/* {post.img && (
             <Box
               borderRadius={6}
               overflow={"hidden"}
               border={"1px solid"}
               borderColor={"gray.light"}
-              maxH={{ base: "300px", md: "400px", lg: "500px" }} // Set max height for different screen sizes
             >
-              {Array.isArray(post.img) ? (
-                <Slider {...settings}>
-                  {post.img.map((src, index) => (
-                    <Image
-                      key={index}
-                      src={src}
-                      w={"full"}
-                      h={"full"}
-                      objectFit={"cover"} // Ensures the image covers the container
-                    />
-                  ))}
-                </Slider>
-              ) : (
-                <Image
-                  src={post.img}
-                  w={"full"}
-                  h={"full"}
-                  objectFit={"cover"} // Ensures the image covers the container
-                />
-              )}
+              <Image src={post.img} w={"full"} />
             </Box>
-          )}
+          )} */}
+
+          <Box
+            maxW={{ base: "368px", md: "600px" }}
+            w={"full"}
+            mx="auto"
+            py={10}
+          >
+            <Slider {...settings} w={"full"}>
+              {slides}
+            </Slider>
+          </Box>
 
           <Flex gap={3} my={1}>
             <Actions post={post} />
@@ -177,57 +211,49 @@ const Post = ({ post, postedBy }) => {
 
           {/* Header */}
           <Text fontSize={"md"} fontWeight={"bold"}>
-            Random Product Header
+            {post.header}
           </Text>
 
           {/* Price */}
-          <Text fontSize={"md"} color={"green.500"} fontWeight={"bold"}>
-            ₦25,000
-          </Text>
+          {post.price && (
+            <Text fontSize={"md"} color={"green.500"} fontWeight={"bold"}>
+              ₦{post.price}
+            </Text>
+          )}
 
           {/* Phone Number and Message Button */}
-          <Flex alignItems={"center"} gap={2}>
-            <Button
-              variant={"outline"}
-              borderColor={"blue.400"}
-              color={"blue.400"}
-              onClick={(e) => {
-                e.preventDefault(); // Prevent default behavior
-                setShowNumber(!showNumber); // Toggle phone number visibility
-              }}
-            >
-              {showNumber ? "08012345678" : "Show Number"}{" "}
-              {/* Show the number or "Show Number" */}
-            </Button>
-            <Button
-              bg={"blue.400"}
-              color={"white"}
-              onClick={(e) => {
-                e.preventDefault(); // Prevent default behavior
-              }}
-            >
-              Message
-            </Button>
-          </Flex>
+          {post.phoneNumber && (
+            <Flex alignItems={"center"} gap={2}>
+              <Button
+                variant={"outline"}
+                borderColor={"blue.400"}
+                color={"blue.400"}
+                onClick={(e) => {
+                  e.preventDefault();
+                  setShowNumber(!showNumber);
+                }}
+              >
+                {showNumber ? post.phoneNumber : "Show Number"}
+              </Button>
+              <Button bg={"blue.400"} color={"white"}>
+                Message
+              </Button>
+            </Flex>
+          )}
 
           {/* Location */}
           <Text fontSize={"sm"} color={"blue.400"}>
-            Lagos, Nigeria
+            {post.location}
           </Text>
 
-          {/* Brand New */}
-          <Text fontSize={"sm"}>Brand New</Text>
+          {/* Condition */}
+          <Text fontSize={"sm"}>{post.condition}</Text>
 
-          {/* Fixed Price */}
-          <Text fontSize={"sm"}>Fixed Price</Text>
+          {/* Price Point */}
+          <Text fontSize={"sm"}>{post.pricePoint}</Text>
 
           {/* Post Text with Show More/Less */}
-          <Text
-            fontSize={"sm"}
-            onClick={(e) => {
-              e.preventDefault(); // Prevent default behavior
-            }}
-          >
+          <Text fontSize={"sm"}>
             {post.text.split(" ").length > 20 ? (
               <>
                 {showMore
@@ -252,3 +278,5 @@ const Post = ({ post, postedBy }) => {
 };
 
 export default Post;
+
+

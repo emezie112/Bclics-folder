@@ -30,6 +30,8 @@ const SuggestedUsers = () => {
     getSuggestedUsers();
   }, [showToast]);
 
+  
+
   return (
     <>
       <Text mb={4} fontWeight={"bold"}>

@@ -29,6 +29,7 @@ import { useRecoilState, useRecoilValue } from "recoil";
 import useShowToast from "../hooks/useShowToast";
 import postsAtom from "../atoms/postsAtom";
 import { useParams } from "react-router-dom";
+import Slider from "react-slick"; // Ensure you have react-slick installed
 
 const MAX_CHAR = 1000;
 
@@ -36,10 +37,11 @@ const CreatePost = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [postText, setPostText] = useState("");
   const [postTitle, setPostTitle] = useState("");
-  const { handleImageChange, imgUrl, setImgUrl } = usePreviewImg();
+  const { handleImageChange, imgUrls, removeImage } = usePreviewImg(); // Updated to use imgUrls
   const imageRef = useRef(null);
   const [category, setCategory] = useState("");
   const [price, setPrice] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [location, setLocation] = useState("");
   const [condition, setCondition] = useState("");
   const [pricePoint, setPricePoint] = useState("");
@@ -74,10 +76,11 @@ const CreatePost = () => {
         body: JSON.stringify({
           postedBy: user._id,
           text: postText,
-          title: postTitle,
-          img: imgUrl,
+          header: postTitle,
+          img: imgUrls, // Changed to imgUrls for multiple images
           category,
           price,
+          phoneNumber,
           location,
           condition,
           pricePoint,
@@ -97,17 +100,26 @@ const CreatePost = () => {
       onClose();
       setPostText("");
       setPostTitle("");
-      setImgUrl("");
       setCategory("");
       setPrice("");
+      setPhoneNumber("");
       setLocation("");
       setCondition("");
       setPricePoint("");
     } catch (error) {
-      showToast("Error", error, "error");
+      showToast("Error", error.message, "error");
     } finally {
       setLoading(false);
     }
+  };
+
+  // Slider settings for image preview
+  const settings = {
+    dots: true,
+    infinite: true,
+    speed: 500,
+    slidesToShow: 1,
+    slidesToScroll: 1,
   };
 
   return (
@@ -128,7 +140,7 @@ const CreatePost = () => {
           <ModalBody pb={6}>
             {/* Post Description */}
             <FormControl>
-              Discription
+              Description
               <Textarea
                 placeholder="Post content goes here..."
                 onChange={handleTextChange}
@@ -143,21 +155,55 @@ const CreatePost = () => {
               >
                 {remainingChar}/{MAX_CHAR}
               </Text>
-              {/* Image Upload */}
+              {/* Image Input and Preview */}
               <Input
                 type="file"
                 hidden
                 ref={imageRef}
+                multiple
+                accept="image/"
                 onChange={handleImageChange}
               />
               <Box display={"flex"} mt={"0.5rem"} mb={"0.5rem"}>
-                <Text>Image</Text>
+                <Text onClick={() => imageRef.current.click()}>Add Image</Text>
                 <BsFillImageFill
                   style={{ marginLeft: "5px", cursor: "pointer" }}
                   size={16}
                   onClick={() => imageRef.current.click()}
                 />
               </Box>
+              {/* Image Preview */}
+              {imgUrls.length > 0 && (
+                <Box>
+                  {imgUrls.length === 1 ? (
+                    // Show single image preview if only one image is uploaded
+                    <Box position="relative">
+                      <Image src={imgUrls[0]} borderRadius="md" />
+                      <CloseButton
+                        position="absolute"
+                        top="2"
+                        right="2"
+                        onClick={() => removeImage(0)}
+                      />
+                    </Box>
+                  ) : (
+                    // Show slider if more than one image is uploaded
+                    <Slider {...settings}>
+                      {imgUrls.map((url, index) => (
+                        <Box key={index} position="relative">
+                          <Image src={url} borderRadius="md" />
+                          <CloseButton
+                            position="absolute"
+                            top="2"
+                            right="2"
+                            onClick={() => removeImage(index)}
+                          />
+                        </Box>
+                      ))}
+                    </Slider>
+                  )}
+                </Box>
+              )}
               {/* Post Header */}
               <Text mt={"0.5rem"} mb={"-0.5rem"}>
                 Post Header
@@ -168,22 +214,6 @@ const CreatePost = () => {
                 onChange={(e) => setPostTitle(e.target.value)}
                 mt={4}
               />
-              <Text fontSize="xs" mt={2}>
-                Note: The title will help in the search across other users.
-              </Text>
-              {/* Image Preview */}
-              {imgUrl && (
-                <Flex mt={5} w="full" position="relative">
-                  <Image src={imgUrl} alt="Selected img" />
-                  <CloseButton
-                    onClick={() => setImgUrl("")}
-                    bg="gray.800"
-                    position="absolute"
-                    top={2}
-                    right={2}
-                  />
-                </Flex>
-              )}
               {/* Categories */}
               <Text mt={"0.5rem"} mb={"-0.5rem"}>
                 Category
@@ -210,9 +240,20 @@ const CreatePost = () => {
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
               />
+              {/* Phone Number */}
+              <Text mt={"0.5rem"} mb={"-0.5rem"}>
+                Phone Number
+              </Text>
+              <Input
+                placeholder="Enter phone number"
+                type="number"
+                mt={4}
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+              />
               {/* Location */}
-              <Text mt={"0.5rem"} mb={"-0.5rem"} 
-                >Location
+              <Text mt={"0.5rem"} mb={"-0.5rem"}>
+                Location
               </Text>
               <Input
                 placeholder="Write where this is available in"

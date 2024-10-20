@@ -12,17 +12,18 @@ const postSchema = mongoose.Schema(
       maxLength: 1000,
     },
     img: {
-      type: String,
+      // Change to an array of strings to store multiple image URLs
+      type: [String],
     },
     likes: {
-      // array of user ids
+      // Array of user IDs
       type: [mongoose.Schema.Types.ObjectId],
       ref: "User",
       default: [],
     },
     replies: [
       {
-        userId: {
+        userId: {  
           type: mongoose.Schema.Types.ObjectId,
           ref: "User",
           required: true,
@@ -39,6 +40,29 @@ const postSchema = mongoose.Schema(
         },
       },
     ],
+    // New fields
+    header: {
+      type: String,
+    },
+    price: {
+      type: Number,
+    },
+    phoneNumber: {
+      type: Number,
+    },
+    location: {
+      type: String,
+    },
+    categories: {
+      type: String,
+      enum: ["Electronics", "Furniture", "Clothing", "Services", "Others"], // Example categories
+    },
+    condition: {
+      type: String,
+    },
+    pricePoint: {
+      type: String,
+    },
   },
   {
     timestamps: true,

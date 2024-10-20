@@ -83,15 +83,15 @@ const PostPage = () => {
 
   if (!currentPost) return null;
 
-  // Slick carousel settings
-  const settings = {
-    dots: true,
-    infinite: true,
-    speed: 500,
-    slidesToShow: 1,
-    slidesToScroll: 1,
-    arrows: true,
-  };
+  // // Slick carousel settings
+  // const settings = {
+  //   dots: true,
+  //   infinite: true,
+  //   speed: 500,
+  //   slidesToShow: 1,
+  //   slidesToScroll: 1,
+  //   arrows: true,
+  // };
 
   return (
     <Box mb={"4rem"}>
@@ -126,8 +126,6 @@ const PostPage = () => {
         </Flex>
       </Flex>
 
-      <Text my={3}>{currentPost.text}</Text>
-
       {currentPost.img && (
         <Box
           borderRadius={6}
@@ -135,28 +133,11 @@ const PostPage = () => {
           border={"1px solid"}
           borderColor={"gray.light"}
         >
-          {Array.isArray(currentPost.img) ? (
-            <Slider {...settings}>
-              {currentPost.img.map((src, index) => (
-                <Image
-                  key={index}
-                  src={src}
-                  w={"full"}
-                  h={"full"}
-                  objectFit={"cover"}
-                />
-              ))}
-            </Slider>
-          ) : (
-            <Image
-              src={currentPost.img}
-              w={"full"}
-              h={"full"}
-              objectFit={"cover"}
-            />
-          )}
+          <Image src={currentPost.img} w={"full"} />
         </Box>
       )}
+
+      <Text my={3}>{currentPost.text}</Text>
 
       <Flex gap={3} my={3}>
         <Actions post={currentPost} />
@@ -211,7 +192,7 @@ const PostPage = () => {
             </Text>
           </>
         ) : (
-          currentPost.text
+          ""
         )}
       </Text>
     </Box>

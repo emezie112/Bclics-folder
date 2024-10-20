@@ -96,7 +96,7 @@ const SearchPage = () => {
                 fontSize="xl"
                 fontWeight="bold"
                 textDecoration="none"
-                _hover={{ textDecoration: "underline", color: "blue.500" }}
+                // _hover={{ textDecoration: "underline", color: "blue.500" }}
                 p={4}
                 display="block"
                 borderRadius="md"
